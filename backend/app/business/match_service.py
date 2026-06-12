@@ -238,6 +238,28 @@ class MatchService:
             logger.warning("football-data.org returned no matches")
             return 0
 
+        # Filter out matches whose teams are not yet defined (e.g. TBD slots
+        # in quarter-finals, semi-finals and the final — football-data.org
+        # returns the matches before the bracket is closed, with
+        # homeTeam.name / awayTeam.name == null).  Storing them would
+        # violate the NOT NULL constraint on `home_team` / `away_team`.
+        before_filter = len(api_matches)
+        api_matches = [
+            m for m in api_matches
+            if (m.get("homeTeam") or {}).get("name")
+            and (m.get("awayTeam") or {}).get("name")
+        ]
+        skipped = before_filter - len(api_matches)
+        if skipped:
+            logger.info(
+                "Skipped %s matches with undefined teams (TBD bracket slots)",
+                skipped,
+            )
+
+        if not api_matches:
+            logger.warning("All matches returned by API had undefined teams")
+            return 0
+
         to_insert: list[Match] = []
         for raw in api_matches:
             external_id = raw.get("id")
@@ -257,8 +279,14 @@ class MatchService:
         return len(to_insert)
 
     def _load_fallback(self) -> int:
+        # Same filter as the API path: skip TBD bracket slots.
+        valid = [
+            m for m in FALLBACK_MATCHES
+            if (m.get("homeTeam") or {}).get("name")
+            and (m.get("awayTeam") or {}).get("name")
+        ]
         to_insert: list[Match] = []
-        for raw in FALLBACK_MATCHES:
+        for raw in valid:
             try:
                 to_insert.append(_match_from_api(raw))
             except (KeyError, ValueError, TypeError) as exc:
