@@ -19,7 +19,7 @@ export default function Home() {
         fetchHealth(),
       ]);
       if (matchesRes.status === 'fulfilled') {
-        setMatches(matchesRes.value.matches || []);
+        setMatches(matchesRes.value || []);
       } else {
         setError(
           'No se pudo conectar con la API. Verifica que el backend esté corriendo.'

@@ -18,14 +18,28 @@ export async function fetchHealth() {
   return data;
 }
 
+/**
+ * Fetch the list of World Cup matches.
+ *
+ * The backend wraps the list inside an envelope:
+ *   { "count": N, "matches": [...] }
+ * We unwrap it here so the rest of the app receives a plain array.
+ */
 export async function fetchMatches() {
   const { data } = await api.get('/matches');
-  return data;
+  return data.matches || [];
 }
 
+/**
+ * Fetch the list of predictions.
+ *
+ * The backend wraps the list inside an envelope:
+ *   { "count": N, "predictions": [...] }
+ * We unwrap it here so the rest of the app receives a plain array.
+ */
 export async function fetchPredictions() {
   const { data } = await api.get('/predictions');
-  return data;
+  return data.predictions || [];
 }
 
 export async function createPrediction(payload) {

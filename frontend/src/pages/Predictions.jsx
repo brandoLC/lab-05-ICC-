@@ -12,7 +12,7 @@ export default function Predictions() {
     setError(null);
     try {
       const data = await fetchPredictions();
-      setPredictions(data.predictions || []);
+      setPredictions(data || []);
     } catch (err) {
       console.error(err);
       setError('No se pudieron cargar las predicciones.');
