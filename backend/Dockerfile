@@ -1,11 +1,8 @@
 FROM python:3.12-slim
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y \
-    gcc \
-    libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
-
+# psycopg2-binary es un wheel precompilado, no necesita gcc/libpq-dev.
+# Esto reduce el tamaño de la imagen y evita OOM en Docker Desktop.
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
